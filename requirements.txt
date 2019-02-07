@@ -1,0 +1,10 @@
+sshtunnel==0.1.4
+psycopg2==2.7.6.1
+discord.py==1.0.0a1630+g26bb6c6
+praw==6.0.0
+paramiko==2.4.2
+requests==2.21.0
+pycrypto==2.6.1
+discord==0.0.2
+timeago==1.0.8
+typing==3.6.6

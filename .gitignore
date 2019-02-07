@@ -1,0 +1,12 @@
+
+\.DS_Store
+
+*.pyc
+
+secrets\.json
+
+loggingConfig\.json
+
+redditapps\.json
+
+Utils\.py
