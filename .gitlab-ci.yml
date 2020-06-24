@@ -1,0 +1,40 @@
+image: python:3.8
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+services:
+    - docker:dind
+
+stages:
+    - test
+    - deploy
+
+test:sonarqube:
+    image:
+        name: sonarsource/sonar-scanner-cli:latest
+        entrypoint: ['']
+    stage: test
+    allow_failure: true
+    variables:
+        SONAR_TOKEN: $SONAR_TOKEN
+        SONAR_HOST_URL: 'https://qube.jesassn.org'
+        GIT_DEPTH: 0
+    script:
+        - sonar-scanner -Dsonar.projectKey=credmgr -Dproject.settings=$CI_PROJECT_DI/sonar-project.properties -Dsonar.qualitygate.wait=true
+    only:
+        - master
+        - tags
+
+deploy:
+    stage: deploy
+    variables:
+        TWINE_USERNAME: $PYPI_USERNAME
+        TWINE_PASSWORD: $PYPI_PASSWORD
+    before_script:
+        - pip install twine
+        - python setup.py sdist
+    script:
+        - twine upload dist/*
+    only:
+        - tags
