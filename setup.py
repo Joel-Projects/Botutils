@@ -8,8 +8,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst'), 'rt') as f:
     README = f.read()
 
-os.chdir(here)
-
 _version_re = re.compile(r'__version__\s*=\s*(.*)')
 with open(os.path.join(here, 'BotUtils/', '__init__.py'), 'rb') as f:
     version = str(ast.literal_eval(_version_re.search(
@@ -27,8 +25,8 @@ extras = {'sshTunnel': ['sshtunnel']}
 
 setup(
     name='BotUtils',
-    author='Lil_SpazJoekp,test',
-    author_email='lilspazjoekp@gmail.com,spaz@jesassn.org',
+    author='Lil_SpazJoekp',
+    author_email='lilspazjoekp@gmail.com',
     description="Personal Utilities for Spaz's bots",
     license='Private',
     version=version,
