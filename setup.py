@@ -1,4 +1,6 @@
+import ast
 import os
+import re
 
 from setuptools import setup
 
@@ -7,14 +9,16 @@ here = os.path.abspath('.')
 with open(os.path.join(here, 'README.rst'), 'rt') as f:
     README = f.read()
 
-version = '2.0.3'
+_version_re = re.compile(r'__version__\s*=\s*(.*)')
+with open(os.path.join(here, 'BotUtils', '__init__.py'), 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(f.read().decode('utf-8')).group(1)))
 
 install_requires = [
     'colorlog',
     'credmgr',
     'praw',
     'psycopg2_binary',
-    'sentry_sdk'
+    'sentry_sdk',
 ]
 
 extras = {'sshTunnel': ['sshtunnel']}
@@ -27,5 +31,6 @@ setup(
     license='Private',
     version=version,
     install_requires=install_requires,
+    packages=['BotUtils'],
     extras_require={'tunnel': ['sshtunnel']}
 )
