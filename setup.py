@@ -21,7 +21,7 @@ install_requires = [
     'sentry_sdk',
 ]
 
-extras = {'sshTunnel': ['sshtunnel']}
+extras = {'tunnel': ['sshtunnel'], 'sqla': ['sqlalchemy']}
 
 setup(
     name='BotUtils',
@@ -32,5 +32,5 @@ setup(
     version=version,
     install_requires=install_requires,
     packages=['BotUtils'],
-    extras_require={'tunnel': ['sshtunnel']}
+    extras_require=extras
 )

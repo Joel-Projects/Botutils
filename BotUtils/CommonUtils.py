@@ -66,13 +66,46 @@ class BotServices:
         except Exception as error:
             log.exception(error)
 
-    def sqlalc(self, botName=None):
+    def sqlalc(self, botName=None, flavor='postgresql', scoped=False, schema=None, engineKwargs=None, sessionKwargs=None, baseClass=None, createAll=False):
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
         params = self._getDbConnectionSettings(botName)
-        url = f"postgresql://{params['user']}:{params['password']}@{params['host']}:{params['port']}/{params['database']}"
-        engine = create_engine(url)
-        return sessionmaker(bind=engine)()
+        url = f"{flavor}://{params['user']}:{params['password']}@{params['host']}:{params['port']}/{params['database']}"
+        sessionKwargs = sessionKwargs or {}
+        engineKwargs = engineKwargs or {}
+        engine = create_engine(url, **engineKwargs)
+        Session = sessionmaker(bind=engine, **sessionKwargs)
+        session = Session()
+        if scoped:
+            from sqlalchemy import event
+            from sqlalchemy.orm import scoped_session, mapper
+            from sqlalchemy.ext.declarative import declarative_base
+            DBSession = scoped_session(Session)
+            baseClass = baseClass or object
+
+            @event.listens_for(mapper, 'init')
+            def auto_add(target, args, kwargs):
+                for k, v in kwargs.items():
+                    setattr(target, k, v)
+                DBSession.merge(target)
+                if not DBSession.autocommit:
+                    DBSession.commit()
+
+            class _Base(baseClass):
+                query = DBSession.query_property()
+                if schema:
+                    __table_args__ = {'schema': schema}
+
+                @classmethod
+                def get(cls, ident):
+                    return cls.query.get(ident)
+
+            Base = declarative_base(bind=session.bind, cls=_Base)
+            if createAll:
+                Base.metadata.create_all()
+            return Base
+        else:
+            return Session()
 
     def logger(self, botName=None):
         if botName:
@@ -108,10 +141,11 @@ class BotServices:
         logging.config.dictConfig(config)
         loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
         for logger in loggers:
-            if devMode:
-                logger.setLevel(logging.DEBUG)
-            else:
-                logger.setLevel(logging.INFO)
+            if not 'sqlalchemy' in logger.name:
+                if devMode:
+                    logger.setLevel(logging.DEBUG)
+                else:
+                    logger.setLevel(logging.INFO)
         return logging.getLogger(botName)
 
 if __name__ == '__main__':
