@@ -10,22 +10,6 @@ stages:
     - test
     - deploy
 
-test:sonarqube:
-    image:
-        name: sonarsource/sonar-scanner-cli:latest
-        entrypoint: ['']
-    stage: test
-    allow_failure: true
-    variables:
-        SONAR_TOKEN: $SONAR_TOKEN
-        SONAR_HOST_URL: 'https://qube.jesassn.org'
-        GIT_DEPTH: 0
-    script:
-        - sonar-scanner -Dsonar.projectKey=credmgr -Dproject.settings=$CI_PROJECT_DI/sonar-project.properties -Dsonar.qualitygate.wait=true
-    only:
-        - master
-        - tags
-
 deploy:
     stage: deploy
     variables:
