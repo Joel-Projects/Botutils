@@ -21,31 +21,41 @@ class BotServices:
         self.server = None
         self.credmgr = CredentialManager(apiToken=api_token)
         self.bot = self.credmgr.bot(bot_name)
+        self.reddit_instances = {}
 
     def reddit(
-        self, username, bot_name=None, asyncpraw=False, reddit_class=None
+        self,
+        username,
+        bot_name=None,
+        asyncpraw=False,
+        reddit_class=None,
+        use_cache=True,
     ) -> praw.Reddit:
         """Provides an authenciated reddit instance.
 
         :param username: Redditor to authenciate as.
         :param bot_name: Specify another bot to use.
         :param asyncpraw: Whether to use asyncpraw.
-        :param reddit_class: An alternate reddit class. If this is specfied `asyncpraw` will be ignored.
+        :param reddit_class: An alternate reddit class. If this is specfied ``asyncpraw`` will be ignored.
         :return: A Reddit instance.
         """
-        if not reddit_class:
-            if asyncpraw:
-                import asyncpraw
+        if not self.reddit_instances.get(username, None) or not use_cache:
+            if not reddit_class:
+                if asyncpraw:
+                    import asyncpraw
 
-                reddit_class = asyncpraw.Reddit
+                    reddit_class = asyncpraw.Reddit
+                else:
+                    reddit_class = praw.Reddit
+            if bot_name:
+                return self.credmgr.bot(bot_name).redditApp.reddit(
+                    username, reddit_class=reddit_class, use_cache=False
+                )
             else:
-                reddit_class = praw.Reddit
-        if bot_name:
-            return self.credmgr.bot(bot_name).redditApp.reddit(
-                username, reddit_class=reddit_class
-            )
-        else:
-            return self.bot.redditApp.reddit(username, reddit_class=reddit_class)
+                self.reddit_instances[username] = self.bot.redditApp.reddit(
+                    username, reddit_class=reddit_class, use_cache=False
+                )
+        return self.reddit_instances.get(username)
 
     def _getDbConnectionSettings(self, bot_name=None):
         if bot_name:
