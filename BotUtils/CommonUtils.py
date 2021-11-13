@@ -63,7 +63,7 @@ class BotServices:
             from sshtunnel import SSHTunnelForwarder
 
             if not self.server:
-                if settings.userSshKey:
+                if settings.useSshKey:
                     authParams = {
                         "ssh_pkey": io.StringIO(settings.privateKey),
                         "ssh_private_key_password": settings.privateKeyPassphrase,
